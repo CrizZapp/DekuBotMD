@@ -53,7 +53,7 @@ npm start
 - 🔗 Canal:
 https://whatsapp.com/channel/0029Vb7hVJm84Om6n2bMbd3I
 
-- 👥 Grupo de soporte:
+- 👥 Grupo de DekuBotMD:
 https://chat.whatsapp.com/G0GxVLf68Xt1Sq4S51tS5z
 
 ---
