@@ -1,30 +1,42 @@
 # 🜸 图书馆 - ɑᥣᥣᥱᥒ ᥴᥲᥒᥒᥱᥣ ✿
 
 <p align="center">
-  <img src="https://files.catbox.moe/7l6n4o.jpg" width="300"/>
+  <img src="https://files.catbox.moe/u462k3.jpg" width="300"/>
 </p>
 
-## ⚡ DekuBotMD
+# ⚡ DekuBotMD
 
-Repositorio oficial de **DekuBotMD**, un bot multipropósito para WhatsApp desarrollado en Node.js.
+Bot multipropósito para WhatsApp desarrollado en Node.js con múltiples funciones y compatibilidad con Termux.
 
 ---
 
-## 📥 Instalación
+## 📥 Instalación en Termux
 
-### ☁️ Clonar Repositorio
+### 🛠️ Actualizar paquetes
+
+```bash
+pkg update && pkg upgrade -y
+```
+
+### 📦 Instalar dependencias necesarias
+
+```bash
+pkg install git nodejs ffmpeg imagemagick yarn -y
+```
+
+### ☁️ Clonar el repositorio
 
 ```bash
 git clone https://github.com/CrizZapp/DekuBotMD
 ```
 
-### 📂 Entrar a la carpeta
+### 📂 Entrar a la carpeta del bot
 
 ```bash
 cd DekuBotMD
 ```
 
-### 📦 Instalar dependencias
+### 📥 Instalar módulos
 
 ```bash
 npm install
@@ -38,19 +50,20 @@ npm start
 
 ---
 
-## 👤 Creador
+# 👤 Creador
 
-### 📚𑂳᷒ᰰ𖹭</>■Allenׅ▪︎ ᰨ○
+## 📚𑂳᷒ᰰ𖹭</>■Allenׅ▪︎ ᰨ○
 
-- 📱 WhatsApp: https://wa.me/59891727140
+- 📱 WhatsApp:
+https://wa.me/59891727140
 
 ---
 
-## 📢 Canales Oficiales
+# 📢 Canales Oficiales
 
-### ✿ ɑᥣᥣᥱᥒ ᥴᥲᥒᥒᥱᥣ ✿
+## ✿ ɑᥣᥣᥱᥒ ᥴᥲᥒᥒᥱᥣ ✿
 
-- 🔗 Canal:
+- 🔗 Canal Oficial:
 https://whatsapp.com/channel/0029Vb7hVJm84Om6n2bMbd3I
 
 - 👥 Grupo de DekuBotMD:
@@ -58,6 +71,6 @@ https://chat.whatsapp.com/G0GxVLf68Xt1Sq4S51tS5z
 
 ---
 
-## ⭐ Repositorio Oficial
+# ⭐ Repositorio Oficial
 
 🔗 https://github.com/CrizZapp/DekuBotMD
