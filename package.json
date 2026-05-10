@@ -1,0 +1,27 @@
+{
+  "name": "dekubotmd",
+  "version": "1.0.0",
+  "description": "Bot de WhatsApp usando Baileys",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "keywords": [
+    "whatsapp",
+    "bot",
+    "baileys",
+    "dekubotmd"
+  ],
+  "author": "Allen",
+  "license": "MIT",
+  "dependencies": {
+    "@hapi/boom": "^10.0.1",
+    "@whiskeysockets/baileys": "latest",
+    "chalk": "^5.3.0",
+    "figlet": "^1.7.0",
+    "node-fetch": "^3.3.2",
+    "pino": "^9.0.0",
+    "yt-search": "^2.12.1"
+  }
+}
