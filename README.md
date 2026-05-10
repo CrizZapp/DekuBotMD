@@ -40,9 +40,9 @@ npm start
 
 ## 👤 Creador
 
-### 📚𑂳᷒ᰰ𖹭</>■Allenׅ▪︎🖥〪ꨪᰰ ᰨ○
+### 📚𑂳᷒ᰰ𖹭</>■Allenׅ▪︎ ᰨ○
 
-- 📱 WhatsApp: https://wa.me/59892706313
+- 📱 WhatsApp: https://wa.me/59891727140
 
 ---
 
