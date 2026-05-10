@@ -1,59 +1,86 @@
-import { exec } from 'child_process';
-import { promisify } from 'util';
-import chalk from 'chalk';
+import { execSync } from 'child_process'
+import chalk from 'chalk'
 
-const execute = promisify(exec);
+var handler = async (m, { conn, text }) => {
+  // Usamos el check de owner que ya tienes o por jid
+  await m.react('⏳')
+  
+  try {
+    // 1. Configuramos el directorio como seguro dinámicamente (usa el directorio actual)
+    execSync(`git config --global --add safe.directory ${process.cwd()}`)
 
-const handler = async (m, { conn, from }) => {
-    await conn.sendMessage(from, { react: { text: "⏳", key: m.key } });
-    await m.reply('*🔍 Buscando actualizaciones en GitHub...*');
+    // 2. Intentamos el pull directamente
+    const stdout = execSync('git pull' + (text ? ' ' + text : ''))
+    let messager = stdout.toString()
 
-    try {
-        // --- PARCHE PARA "DUBIOUS OWNERSHIP" ---
-        // Marcamos la carpeta como segura para que Git no se queje
-        const path = '/storage/emulated/0/PremBots/DekuBotMD';
-        await execute(`git config --global --add safe.directory ${path}`).catch(() => {});
-
-        // Verificar si es un repo, si no, vincularlo
-        try {
-            await execute('git remote -v');
-        } catch (err) {
-            console.log(chalk.yellow('[SISTEMA] Configurando repositorio...'));
-            await execute('git init');
-            await execute('git remote add origin https://github.com/CrizZapp/DekuBotMD');
-        }
-
-        await execute('git fetch origin');
-        
-        const { stdout: status } = await execute('git status -uno');
-
-        if (status.includes('Your branch is up to date') || status.includes('tu rama está actualizada')) {
-            await conn.sendMessage(from, { react: { text: "✅", key: m.key } });
-            return await m.reply('✅ *DekuBot MD ya está en su versión más reciente.*');
-        }
-
-        await m.reply('*📥 Descargando cambios...*');
-
-        // Intentar pull forzando la rama main o master
-        const { stdout: pullLog } = await execute('git pull origin main || git pull origin master');
-        
-        console.log(chalk.green('[UPDATE SUCCESS]'), pullLog);
-
-        await m.reply(`🚀 *Actualización Exitosa*\n\n\`\`\`${pullLog}\`\`\`\n\n> Reiniciando sistema...`);
-
-        setTimeout(() => {
-            process.exit(0);
-        }, 3000);
-
-    } catch (e) {
-        console.error(chalk.red('[ERROR UPDATE]'), e);
-        await m.reply('❌ *Error de permisos/Git:* \n' + e.message);
+    // Personalización de mensajes estilo Deku
+    if (messager.includes('Already up to date') || messager.includes('Ya está al día')) {
+      messager = '✅ *DekuBot MD ya está actualizado a la última versión.*'
+    } else {
+      messager = '🚀 *Actualización exitosa:*\n\n' + stdout.toString()
     }
-};
 
-handler.help = ['update'];
-handler.tags = ['owner'];
-handler.command = ['update', 'actualizar'];
-handler.rowner = true; 
+    await m.react('✅')
+    await conn.sendMessage(m.chat, {
+      text: messager,
+      contextInfo: {
+        externalAdReply: {
+          showAdAttribution: true,
+          title: 'DEKU BOT MD - UPDATE SYSTEM',
+          body: 'Sincronizando con GitHub...',
+          mediaType: 1,
+          thumbnailUrl: 'https://files.catbox.moe/t6bwzk.jpg', // Puedes usar el de tu bot
+          sourceUrl: 'https://github.com/CrizZapp/DekuBotMD'
+        }
+      }
+    }, { quoted: m })
 
-export default handler;
+    // Reiniciar si hubo cambios reales
+    if (!messager.includes('actualizado')) {
+       setTimeout(() => { process.exit(0) }, 3000)
+    }
+
+  } catch (error) {
+    // 3. Manejo de conflictos (Lógica Shadow mejorada)
+    try {
+      const status = execSync('git status --porcelain')
+      if (status.length > 0) {
+        const conflictedFiles = status
+          .toString()
+          .split('\n')
+          .filter(line => line.trim() !== '')
+          .map(line => {
+            // Ignoramos archivos que siempre cambian
+            if (/database\.json|session\/|tmp\/|node_modules/g.test(line)) return null
+            return '*→ ' + line.slice(3) + '*'
+          })
+          .filter(Boolean)
+
+        if (conflictedFiles.length > 0) {
+          const errorMessage = `\`⚠︎ CONFLICTO DE DATOS:\`\n\n> *Se han modificado archivos locales que impiden la actualización automática. Por favor, revierte los cambios en:*\n\n${conflictedFiles.join('\n')}`
+          
+          await conn.sendMessage(m.chat, { text: errorMessage }, { quoted: m })
+          return await m.react('✖️')
+        }
+      }
+      
+      // Si el error no es por conflictos, puede ser que no haya repo
+      if (error.message.includes('not a git repository')) {
+          await m.reply('❌ *Error:* El bot no fue instalado vía Git (clonado). No se puede actualizar automáticamente.')
+      } else {
+          await m.reply('❌ *Error inesperado:* ' + error.message)
+      }
+
+    } catch (err2) {
+      console.error(err2)
+      await m.reply('⚠︎ Error crítico en el sistema de actualización.')
+    }
+  }
+}
+
+handler.help = ['update']
+handler.tags = ['owner']
+handler.command = ['update', 'actualizar', 'fix']
+handler.rowner = true 
+
+export default handler
