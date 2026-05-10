@@ -1,47 +1,48 @@
 import { execSync } from 'child_process'
 import chalk from 'chalk'
 
-var handler = async (m, { conn, text }) => {
-  // Usamos el check de owner que ya tienes o por jid
-  await m.react('⏳')
+var handler = async (m, { conn, from, text }) => {
+  // Reacción manual ya que tu handler no tiene m.react
+  await conn.sendMessage(from, { react: { text: "⏳", key: m.key } })
   
-  try {
-    // 1. Configuramos el directorio como seguro dinámicamente (usa el directorio actual)
+    try {
     execSync(`git config --global --add safe.directory ${process.cwd()}`)
 
-    // 2. Intentamos el pull directamente
-    const stdout = execSync('git pull' + (text ? ' ' + text : ''))
+    // 1. Forzamos a git a olvidar cualquier cambio local y sincronizar con el servidor
+    // Esto soluciona el error de "Cambios locales detectados" de forma automática
+    execSync('git fetch --all')
+    execSync('git reset --hard origin/master') 
+    
+    // Si usas una rama distinta a master (ej: main), cámbiala arriba
+    const stdout = execSync('git pull')
     let messager = stdout.toString()
 
-    // Personalización de mensajes estilo Deku
     if (messager.includes('Already up to date') || messager.includes('Ya está al día')) {
-      messager = '✅ *DekuBot MD ya está actualizado a la última versión.*'
+      messager = '✅ *El sistema ya se encuentra en su última versión.*'
     } else {
-      messager = '🚀 *Actualización exitosa:*\n\n' + stdout.toString()
+      messager = '🚀 *Sincronización forzada exitosa:*\n\n' + stdout.toString()
     }
 
-    await m.react('✅')
-    await conn.sendMessage(m.chat, {
+    await conn.sendMessage(from, { react: { text: "✅", key: m.key } })
+    await conn.sendMessage(from, {
       text: messager,
       contextInfo: {
         externalAdReply: {
           showAdAttribution: true,
-          title: 'DEKU BOT MD - UPDATE SYSTEM',
-          body: 'Sincronizando con GitHub...',
+          title: 'DEKU BOT MD - UPDATE',
+          body: 'Sincronización completada',
           mediaType: 1,
-          thumbnailUrl: 'https://files.catbox.moe/t6bwzk.jpg', // Puedes usar el de tu bot
+          thumbnailUrl: 'https://files.catbox.moe/t6bwzk.jpg',
           sourceUrl: 'https://github.com/CrizZapp/DekuBotMD'
         }
       }
     }, { quoted: m })
 
-    // Reiniciar si hubo cambios reales
     if (!messager.includes('actualizado')) {
        setTimeout(() => { process.exit(0) }, 3000)
     }
 
   } catch (error) {
-    // 3. Manejo de conflictos (Lógica Shadow mejorada)
     try {
       const status = execSync('git status --porcelain')
       if (status.length > 0) {
@@ -50,30 +51,22 @@ var handler = async (m, { conn, text }) => {
           .split('\n')
           .filter(line => line.trim() !== '')
           .map(line => {
-            // Ignoramos archivos que siempre cambian
             if (/database\.json|session\/|tmp\/|node_modules/g.test(line)) return null
             return '*→ ' + line.slice(3) + '*'
           })
           .filter(Boolean)
 
         if (conflictedFiles.length > 0) {
-          const errorMessage = `\`⚠︎ CONFLICTO DE DATOS:\`\n\n> *Se han modificado archivos locales que impiden la actualización automática. Por favor, revierte los cambios en:*\n\n${conflictedFiles.join('\n')}`
-          
-          await conn.sendMessage(m.chat, { text: errorMessage }, { quoted: m })
-          return await m.react('✖️')
+          const errorMessage = `\`⚠︎ CONFLICTO:\`\n\n> *Cambios locales detectados. Revierte estos archivos:*\n\n${conflictedFiles.join('\n')}`
+          await m.reply(errorMessage)
+          return await conn.sendMessage(from, { react: { text: "✖️", key: m.key } })
         }
       }
       
-      // Si el error no es por conflictos, puede ser que no haya repo
-      if (error.message.includes('not a git repository')) {
-          await m.reply('❌ *Error:* El bot no fue instalado vía Git (clonado). No se puede actualizar automáticamente.')
-      } else {
-          await m.reply('❌ *Error inesperado:* ' + error.message)
-      }
+      await m.reply('❌ *Error:* ' + error.message)
 
     } catch (err2) {
-      console.error(err2)
-      await m.reply('⚠︎ Error crítico en el sistema de actualización.')
+      await m.reply('⚠︎ Error crítico en el sistema.')
     }
   }
 }
